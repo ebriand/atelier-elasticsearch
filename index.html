@@ -319,6 +319,10 @@ $ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
           </div>
 
 <h3>7. Initialiser la river mongodb</h3>
+Travail préalable : mapping geo_loc
+
+curl -XPUT 'http://localhost:9200/bank/customers/_mapping?pretty=true' -d '{"customers" : {"properties":{"location": {"type":"geo_point", "lat_lon": true}}}}'
+
 Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents de type <b>customers</b><br><br>
 <div class="accordion" id="accordion71">
             <div class="accordion-group">
@@ -360,13 +364,27 @@ Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents
           </div>
 L'activation de la river mongodb se manifest avec des logs dans la console. On peut aussi voir l'activité sur le plugin <a href="http://localhost:9200/_plugin/bigdesk/">bigdesk</a>. L'indexation doit prendre moins de 5 minutes.
 
-<h3>8. Chercher des documents (avancé)</h3>
+<h3>8. Chercher des documents (avancé 1)</h3>
 Ecrire une requête qui retourne les personnes dont leur enrollementDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert.
 
+curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{"query":{"range": {"enrollmentDate" : {"lt"  :"2000-01-01"}}}, "sort":{"enrollmentDate":"desc"}, "facets":{"repartitionCompte":{"terms":{"field":"closingDate"}}}}'
 
-<h3>9. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
+<h3>9. Chercher des documents (avancé 2)</h3>
+chercher les documents par rapport aux coordonnées GPS
 
-<h3>10. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
+<h3>10. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
+
+verify on bigdesk
+make a query
+
+<h3>11. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
+
+name cluster
+
+launch es
+
+see on head
+
 <br><br>
         </div>
         <div id="push"></div>
