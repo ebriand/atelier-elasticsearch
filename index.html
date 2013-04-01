@@ -69,7 +69,10 @@ outline: 0;
           <h1>Atelier elasticsearch.</h1>
           <hr>
           <h3>0. Prérequis</h3>
-          Avoir un mongodb en mode replica set (obligatoire pour la river mongodb). Vous pouvez trouver une doc&nbsp;<a href="http://docs.mongodb.org/manual/tutorial/deploy-replica-set/" target="_blank">ici</a><br/><br/>
+          <ul>
+            <li>Avoir un mongodb en mode replica set (obligatoire pour la river mongodb). Vous pouvez trouver une doc&nbsp;<a href="http://docs.mongodb.org/manual/tutorial/deploy-replica-set/" target="_blank">ici</a>
+            <li>Importer le fichier de données (<a href="data.tgz">ici</a>) dans la base <b>test-es</b>, collection <b>customers</b>
+          </ul>
           <div class="accordion" id="accordion01">
             <div class="accordion-group">
               <div class="accordion-heading">
@@ -84,7 +87,10 @@ $ tar -xvf mongodb-osx-x86_64-2.4.1.tgz
 $ cd mongodb-osx-x86_64-2.4.1/bin/
 $ mongod --replSet rs0
 $ mongo
-> rs.initiate()</pre>
+> rs.initiate()
+> exit
+$ tar -xvf ~/Downloads/data.tgz
+$ mongoimport -db test-es --collection customers --file test.json</pre>
                 </div>
               </div>
             </div>
@@ -250,7 +256,7 @@ ou encore plus simple
 
 <h3>5. Chercher des documents</h3>
 
-<ul><li>Faire une recherche pour trouver le document qui contient <b>united</b><li>Faire une recherche pour trouver le document qui contient <b>America</b></ul>
+Faire une recherche pour trouver le document qui contient <b>America</b> en faisant une requête dans l'url et une requête en JSON<br><br>
 
 <div class="accordion" id="accordion51">
             <div class="accordion-group">
@@ -266,22 +272,16 @@ Vous pouvez trouver la documentation de la query DSL <a href="http://www.elastic
               </div>
             </div>
           </div>
-           <div class="accordion" id="accordion53">
+           <div class="accordion" id="accordion52">
             <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion53" href="#collapse53">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion52" href="#collapse52">
                   Solution
                 </a>
               </div>
-              <div id="collapse53" class="accordion-body collapse">
+              <div id="collapse52" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
-  "query" : {
-    "match" : {
-      "text" : "united"
-    }
-  }
-}'
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?q=text:America'
 $ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "query" : {
     "match" : {
@@ -294,10 +294,75 @@ $ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
             </div>
           </div>
 
+<h3>6. Formatter la réponse</h3>
+Faire la recherche précédente tout en formattant la réponse pour qu'elle soit lisible humainement.<br><br>
+<div class="accordion" id="accordion61">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion41" href="#collapse61">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse61" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true&q=text:America'
+$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
+  "query" : {
+    "match" : {
+      "text" : "America"
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
 
 <h3>7. Initialiser la river mongodb</h3>
+Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents de type <b>customers</b><br><br>
+<div class="accordion" id="accordion71">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion71" href="#collapse71">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse71" class="accordion-body collapse">
+                <div class="accordion-inner">
+                  Vous pouvez trouver de la documentation <a href="https://github.com/richardwilly98/elasticsearch-river-mongodb/wiki" target="_blank">ici</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion" id="accordion72">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion72" href="#collapse72">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse72" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
+  "type": "mongodb",
+    "mongodb": {
+      "db": "test-es", 
+      "collection": "customers"
+    },
+    "index": {
+      "name": "bank", 
+      "type": "customers"
+    }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+L'activation de la river mongodb se manifest avec des logs dans la console. On peut aussi voir l'activité sur le plugin <a href="http://localhost:9200/_plugin/bigdesk/">bigdesk</a>. L'indexation doit prendre moins de 5 minutes.
 
-<h3>8. Chercher les personnes dont leur enrollementDate est avant le 1er 2000 triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert </h3>
+<h3>8. Chercher des documents (avancé)</h3>
+Ecrire une requête qui retourne les personnes dont leur enrollementDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert.
+
 
 <h3>9. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
 
