@@ -435,7 +435,7 @@ Avant d'initialiser la river mongo, pour permettre l'interprétation du champ lo
               </div>
               <div id="collapse101" class="accordion-body collapse">
                 <div class="accordion-inner">
-                  Vous pouvez trouver de la documentation pour le mapping geo_point <a href="http://www.elasticsearch.org/guide/reference/mapping/geo-point-type/" target="_blank">ici</a>
+                  Avant de pouvoir définir le mapping, il faut créer l'index. Vous pouvez trouver de la documentation pour le mapping geo_point <a href="http://www.elasticsearch.org/guide/reference/mapping/geo-point-type/" target="_blank">ici</a>
                 </div>
               </div>
             </div>
@@ -449,7 +449,8 @@ Avant d'initialiser la river mongo, pour permettre l'interprétation du champ lo
               </div>
               <div id="collapse102" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XPUT 'http://localhost:9200/bank/customers/_mapping' -d '{
+<pre>$ curl -XPUT 'http://localhost:9200/bank'
+$ curl -XPUT 'http://localhost:9200/bank/customers/_mapping' -d '{
     "customers" : {
       "properties":{
         "location": { "type" : "geo_point", "lat_lon" : true }
@@ -485,7 +486,7 @@ Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents
               </div>
               <div id="collapse112" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
+<pre>$ curl -XPOST 'http://localhost:9200/_river/bank_river/_meta' -d '{
   "type": "mongodb",
     "mongodb": {
       "db": "test-es", 
@@ -502,54 +503,109 @@ Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents
           </div>
 L'activation de la river mongodb se manifest avec des logs dans la console. On peut aussi voir l'activité sur le plugin <a href="http://localhost:9200/_plugin/bigdesk/" target="_blank">bigdesk</a>. L'indexation doit prendre moins de 5 minutes.
 
-<h3>12. Chercher des documents (avancé 1/3)</h3>
-Ecrire une requête qui retourne les personnes dont leur enrollmentDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert (traduit par le champ closingDate dans account à null).<br><br>
-<div class="accordion" id="accordion121">
+<h3>12. Afficher le mapping</h3>
+Afficher le mapping de l'index créé pour s'assurer du type de chacun des champs.<br><br>
+<div class="accordion" id="accordion122">
             <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion121" href="#collapse121">
-                  Hint
-                </a>
-              </div>
-              <div id="collapse121" class="accordion-body collapse">
-                <div class="accordion-inner">
-                  Dans une facet terms, le champ missing donne le nombre de document où le champ indiquer dans la facet n'est pas rempli.
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="accordion" id="accordion112">
-            <div class="accordion-group">
-              <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion112" href="#collapse112">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion122" href="#collapse122">
                   Solution
                 </a>
               </div>
-              <div id="collapse112" class="accordion-body collapse">
+              <div id="collapse122" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{"query":{"range": {"enrollmentDate" : {"lt"  :"2000-01-01"}}}, "sort":{"enrollmentDate":"desc"}, "facets":{"repartitionCompte":{"terms":{"field":"closingDate"}}}}'</pre>
+<pre>$ curl -XGET 'http://localhost:9200/bank/customers/_mapping'</pre>
                 </div>
               </div>
             </div>
           </div>
-<h3>12. Chercher des documents facet nb compte (avancé 2/3)</h3>
-<h3>13. Chercher des documents gps autour paris (avancé 3/3)</h3>
-chercher les documents par rapport aux coordonnées GPS
-
-<h3>14. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
-
-verify on bigdesk
-make a query
-
-<h3>15. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
-
-name cluster
-
-launch es
-
-see on head
-<h3>Bonux pour les rapides</h3>
-Instancier un elasticsearch sur une instance EC2 et faire de telle manière que l'on puisse faire un AMI pour instancier de nouveaux noeuds juste en démarrant une instance. Faire de telle manière que l'index est stocké sur S3. Un bon tutorial se trouve <a href="http://www.elasticsearch.org/tutorials/elasticsearch-on-ec2/" target="_blank">ici</a> si besoin :)
+<h3>13. Chercher des documents (avancé 1/2)</h3>
+Ecrire une requête qui retourne les personnes dont leur enrollmentDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert (traduit par le champ closingDate dans account à null).<br><br>
+<div class="accordion" id="accordion131">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion131" href="#collapse131">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse131" class="accordion-body collapse">
+                <div class="accordion-inner">
+                  Dans une facet terms, le champ missing donne le nombre de documents où le champ indiqué dans la facet n'est pas rempli.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion" id="accordion132">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion132" href="#collapse132">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse132" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{
+  "query" : {
+    "range" : { 
+      "enrollmentDate" : { "lt" : "2000-01-01" }
+    }
+  }, 
+  "sort" : { "enrollmentDate" : "desc" },
+  "facets" : {
+    "repartitionCompte" : {
+      "terms" : { "field" : "closingDate" }
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>14. Chercher des documents(avancé 2/2)</h3>
+Chercher les personnes qui se trouvent à moins de 20km de Paris.<br><br>
+<div class="accordion" id="accordion141">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion141" href="#collapse141">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse141" class="accordion-body collapse">
+                <div class="accordion-inner">Les coordonnées de Paris sont "48.8742, 2.3470". Il faut appliquer un filter geo_distance sur le résultat de la query, la doc <a href="http://www.elasticsearch.org/guide/reference/query-dsl/geo-distance-filter/" target="_blank">ici</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion" id="accordion142">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion142" href="#collapse142">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse142" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{
+  "query": {
+    "match_all": {}
+  },
+  "filter": {
+    "geo_distance": {
+      "distance": "20km",
+      "location": "48.8742, 2.3470"
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>15. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
+Ajouter un document pour s'assurer que le document est bien disponible sur l'index.
+<h3>16. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
+Donner un nom à votre cluster dans le fichier de config elasticsearch.yaml. Relancer elasticsearch plusieurs fois et aller voir sur head les shards se répartirent sur les différentes instances.
+<h3>17. Bonux pour les rapides</h3>
+Instancier un elasticsearch sur une instance EC2 et faire de telle manière que l'on puisse faire un AMI pour instancier de nouveaux noeuds juste en démarrant une instance EC2 de l'AMI. Faire de telle manière que l'index est stocké sur S3. Un bon tutorial se trouve <a href="http://www.elasticsearch.org/tutorials/elasticsearch-on-ec2/" target="_blank">ici</a> si besoin :)
 <br><br><br><br><br><br>
         </div>
         <div id="push"></div>
