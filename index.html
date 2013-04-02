@@ -254,9 +254,9 @@ ou encore plus simple
             </div>
           </div>
 
-<h3>5. Chercher des documents</h3>
+<h3>5. Chercher des documents (1/3)</h3>
 
-Faire une recherche pour trouver le document qui contient <b>America</b> en faisant une requête dans l'url et une requête en JSON<br><br>
+Faire une recherche pour trouver le document qui contient <b>America</b> en faisant une requête dans l'url et ensuite une requête "match" en JSON<br><br>
 
 <div class="accordion" id="accordion51">
             <div class="accordion-group">
@@ -293,20 +293,126 @@ $ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
               </div>
             </div>
           </div>
-
-<h3>6. Formatter la réponse</h3>
-Faire la recherche précédente tout en formattant la réponse pour qu'elle soit lisible humainement.<br><br>
+<h3>6. Chercher des documents (2/3)</h3>
+Faire une recherche avec comme critère <b>Ameri*a</b> en faisant une requête wildcard et ensuite avec comme critère <b>Ameriqa</b> en faisant une recherche fuzzy<br><br>
 <div class="accordion" id="accordion61">
             <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion41" href="#collapse61">
-                  Solution
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion61" href="#collapse61">
+                  Hint
                 </a>
               </div>
               <div id="collapse61" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true&q=text:America'
-$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
+Vous pouvez trouver la documentation des queries fuzzy <a href="http://www.elasticsearch.org/guide/reference/query-dsl/fuzzy-query/" target="_blank">ici</a> et wildcard <a href="http://www.elasticsearch.org/guide/reference/query-dsl/wildcard-query/" target="_blank">ici</a>
+                </div>
+              </div>
+            </div>
+          </div>
+           <div class="accordion" id="accordion62">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion62" href="#collapse62">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse62" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
+  "query" : {
+    "match" : {
+      "wildcard" : "Ameri*a"
+    }
+  }
+}'
+$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
+  "query" : {
+    "match" : {
+      "fuzzy" : "Ameriqa"
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>7. Chercher des documents (3/3)</h3>
+Faire une recherche sur l'ensemble de l'index en faisant une facet qui donne le count des 20 termes les plus fréquents dans le champ text<br><br>
+<div class="accordion" id="accordion61">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion71" href="#collapse71">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse71" class="accordion-body collapse">
+                <div class="accordion-inner">
+Vous pouvez trouver la documentation de la facet terms <a href="http://www.elasticsearch.org/guide/reference/api/search/facets/terms-facet/" target="_blank">ici</a>
+                </div>
+              </div>
+            </div>
+          </div>
+           <div class="accordion" id="accordion72">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion72" href="#collapse72">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse72" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
+  "query" : {
+    "match_all" : { }
+  }, 
+  "facets" : {
+    "countTerms" : {
+      "terms" : {
+        "field" : "text",
+        "size": 20
+      }
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>8. Altérer la réponse</h3>
+Faire la recherche pour trouver le document qui contient <b>America</b> tout en formattant la réponse pour qu'elle soit lisible humainement, et afficher l'explication du scoring.<br><br>
+<div class="accordion" id="accordion81">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion81" href="#collapse81">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse81" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
+  "explain": true,
+  "query" : {
+    "match" : {
+      "text" : "America"
+    }
+  }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>9. Delete document</h3>
+Effacer le document contenant <b>America</b><br><br>
+<div class="accordion" id="accordion91">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion91" href="#collapse91">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse91" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XDELETE 'http://localhost:9200/foo/bar/' -d '{
   "query" : {
     "match" : {
       "text" : "America"
@@ -318,36 +424,68 @@ $ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
             </div>
           </div>
 
-<h3>7. Initialiser la river mongodb</h3>
-Travail préalable : mapping geo_loc
-
-curl -XPUT 'http://localhost:9200/bank/customers/_mapping?pretty=true' -d '{"customers" : {"properties":{"location": {"type":"geo_point", "lat_lon": true}}}}'
-
-Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents de type <b>customers</b><br><br>
-<div class="accordion" id="accordion71">
+<h3>10. Initialiser la river mongodb (1/2)</h3>
+Avant d'initialiser la river mongo, pour permettre l'interprétation du champ location du document mongo, initialiser l'index <b>bank</b>, avec des documents de type <b>customers</b> et customiser le mapping du champ location pour qu'il soit de type geo_point<br><br>
+<div class="accordion" id="accordion91">
             <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion71" href="#collapse71">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion91" href="#collapse101">
                   Hint
                 </a>
               </div>
-              <div id="collapse71" class="accordion-body collapse">
+              <div id="collapse101" class="accordion-body collapse">
+                <div class="accordion-inner">
+                  Vous pouvez trouver de la documentation pour le mapping geo_point <a href="http://www.elasticsearch.org/guide/reference/mapping/geo-point-type/" target="_blank">ici</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion" id="accordion102">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion102" href="#collapse102">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse102" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XPUT 'http://localhost:9200/bank/customers/_mapping' -d '{
+    "customers" : {
+      "properties":{
+        "location": { "type" : "geo_point", "lat_lon" : true }
+      }
+    }
+}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>11. Initialiser la river mongodb (2/2)</h3>
+Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents de type <b>customers</b><br><br>
+<div class="accordion" id="accordion111">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion111" href="#collapse111">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse111" class="accordion-body collapse">
                 <div class="accordion-inner">
                   Vous pouvez trouver de la documentation <a href="https://github.com/richardwilly98/elasticsearch-river-mongodb/wiki" target="_blank">ici</a>
                 </div>
               </div>
             </div>
           </div>
-          <div class="accordion" id="accordion72">
+          <div class="accordion" id="accordion112">
             <div class="accordion-group">
               <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion72" href="#collapse72">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion112" href="#collapse112">
                   Solution
                 </a>
               </div>
-              <div id="collapse72" class="accordion-body collapse">
+              <div id="collapse112" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search?pretty=true' -d '{
+<pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "type": "mongodb",
     "mongodb": {
       "db": "test-es", 
@@ -362,45 +500,64 @@ Initialiser la river mongodb pour créer l'index <b>bank</b>, avec des documents
               </div>
             </div>
           </div>
-L'activation de la river mongodb se manifest avec des logs dans la console. On peut aussi voir l'activité sur le plugin <a href="http://localhost:9200/_plugin/bigdesk/">bigdesk</a>. L'indexation doit prendre moins de 5 minutes.
+L'activation de la river mongodb se manifest avec des logs dans la console. On peut aussi voir l'activité sur le plugin <a href="http://localhost:9200/_plugin/bigdesk/" target="_blank">bigdesk</a>. L'indexation doit prendre moins de 5 minutes.
 
-<h3>8. Chercher des documents (avancé 1)</h3>
-Ecrire une requête qui retourne les personnes dont leur enrollementDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert.
-
-curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{"query":{"range": {"enrollmentDate" : {"lt"  :"2000-01-01"}}}, "sort":{"enrollmentDate":"desc"}, "facets":{"repartitionCompte":{"terms":{"field":"closingDate"}}}}'
-
-<h3>9. Chercher des documents (avancé 2)</h3>
+<h3>12. Chercher des documents (avancé 1/3)</h3>
+Ecrire une requête qui retourne les personnes dont leur enrollmentDate est avant le 1er janvier 2000 (strictement) triés du plus récent au plus ancien en comptant le nombre de compte encore ouvert (traduit par le champ closingDate dans account à null).<br><br>
+<div class="accordion" id="accordion121">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion121" href="#collapse121">
+                  Hint
+                </a>
+              </div>
+              <div id="collapse121" class="accordion-body collapse">
+                <div class="accordion-inner">
+                  Dans une facet terms, le champ missing donne le nombre de document où le champ indiquer dans la facet n'est pas rempli.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion" id="accordion112">
+            <div class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion112" href="#collapse112">
+                  Solution
+                </a>
+              </div>
+              <div id="collapse112" class="accordion-body collapse">
+                <div class="accordion-inner">
+<pre>$ curl -XGET 'http://localhost:9200/bank/customers/_search?pretty=true' -d '{"query":{"range": {"enrollmentDate" : {"lt"  :"2000-01-01"}}}, "sort":{"enrollmentDate":"desc"}, "facets":{"repartitionCompte":{"terms":{"field":"closingDate"}}}}'</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+<h3>12. Chercher des documents facet nb compte (avancé 2/3)</h3>
+<h3>13. Chercher des documents gps autour paris (avancé 3/3)</h3>
 chercher les documents par rapport aux coordonnées GPS
 
-<h3>10. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
+<h3>14. Ajouter un document mongo et voir que l’index l’a pris en compte grâce a la river</h3>
 
 verify on bigdesk
 make a query
 
-<h3>11. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
+<h3>15. Démarrer 2 nouvelles instances es, et allez voir dans head la nouvelle répartition des shards</h3>
 
 name cluster
 
 launch es
 
 see on head
-
-<br><br>
+<h3>Bonux pour les rapides</h3>
+Instancier un elasticsearch sur une instance EC2 et faire de telle manière que l'on puisse faire un AMI pour instancier de nouveaux noeuds juste en démarrant une instance. Faire de telle manière que l'index est stocké sur S3. Un bon tutorial se trouve <a href="http://www.elasticsearch.org/tutorials/elasticsearch-on-ec2/" target="_blank">ici</a> si besoin :)
+<br><br><br><br><br><br>
         </div>
         <div id="push"></div>
       </div>
       <div id="footer">
         <div class="container">
           <div class="row">
-              <div class="span3 offset5">
-                <br/><br/>
-                <br/><br/>
-                <a href="http://www.elasticsearch.org/guide">elasticsearch website</a>
-                <a href="http://www.elasticsearch.org/guide/reference/api/search/">Search API</a>
-                <a href="http://www.elasticsearch.org/guide/reference/query-dsl/" target="_blank">Query DSL</a>
-                <a href="http://www.elasticsearch.org/guide/reference/api/search/facets/">Facets</a>
-              </div>
-              <div class="span4">
+              <div class="offset8 span4">
                 <img src="images/bonsai1.png">
               </div>
           </div>
