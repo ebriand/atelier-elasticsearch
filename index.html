@@ -487,7 +487,7 @@ Effacer le document contenant <b>America</b><br><br>
               </div>
               <div id="collapse91" class="accordion-body collapse">
                 <div class="accordion-inner">
-<pre>$ curl -XDELETE 'http://localhost:9200/foo/bar/' -d '{
+<pre>$ curl -XDELETE 'http://localhost:9200/foo/bar/_query' -d '{
   "query" : {
     "match" : {
       "text" : "America"
