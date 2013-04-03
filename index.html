@@ -341,14 +341,14 @@ Vous pouvez trouver la documentation des queries fuzzy <a href="http://www.elast
 <pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "query" : {
     "wildcard" : {
-      "text" : "Ameri*a"
+      "text" : "ameri*a"
     }
   }
 }'
 $ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "query" : {
     "fuzzy" : {
-      "text" : "Ameriqa"
+      "text" : "ameriqa"
     }
   }
 }'</pre>
