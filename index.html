@@ -340,15 +340,15 @@ Vous pouvez trouver la documentation des queries fuzzy <a href="http://www.elast
                 <div class="accordion-inner">
 <pre>$ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "query" : {
-    "match" : {
-      "wildcard" : "Ameri*a"
+    "wildcard" : {
+      "text" : "Ameri*a"
     }
   }
 }'
 $ curl -XPOST 'http://localhost:9200/foo/bar/_search' -d '{
   "query" : {
-    "match" : {
-      "fuzzy" : "Ameriqa"
+    "fuzzy" : {
+      "text" : "Ameriqa"
     }
   }
 }'</pre>
